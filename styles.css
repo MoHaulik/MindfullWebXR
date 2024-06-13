@@ -1,0 +1,105 @@
+@font-face {
+    font-family: 'PangramSans';
+    src: url('PPPangramSansRounded-Semibold-1ab2f90b.woff2') format('woff2'),
+         url('PPPangramSansRounded-CompactRegular-6aa71960.woff2') format('woff2'),
+         url('PPPangramSans-Medium-86e281ae.woff2') format('woff2'),
+         url('PPPangramSans-Bold-f02861ce.woff2') format('woff2');
+}
+
+body, html {
+    margin: 0;
+    height: 100%;
+    overflow: hidden;
+    font-family: 'PangramSans', sans-serif;
+}
+
+.lava-lamp-background {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(45deg, rgba(0, 255, 0, 0.5), rgba(0, 0, 255, 0.5));
+    overflow: hidden;
+    transition: background 1s ease-in-out; /* Ensure smooth transition */
+}
+
+.lava-lamp-background::before,
+.lava-lamp-background::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(0, 255, 0, 0.5) 10%, transparent 10%), 
+                radial-gradient(circle, rgba(0, 0, 255, 0.5) 10%, transparent 10%);
+    background-size: 50% 50%;
+    animation: move 30s infinite alternate, pulse 40s infinite alternate;
+    opacity: 0.6;
+    filter: blur(50px);
+    transition: transform 1s ease-in-out, opacity 1s ease-in-out;
+}
+
+.lava-lamp-background::after {
+    animation-delay: 15s, 20s;
+}
+
+@keyframes move {
+    0% {
+        transform: translate(-50%, -50%);
+    }
+    100% {
+        transform: translate(50%, 50%);
+    }
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.8);
+    }
+}
+
+.overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(128, 128, 128, 0.5);
+    z-index: 1;
+    transition: background 1s ease-in-out;
+}
+
+.content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    color: white;
+    z-index: 2;
+    padding: 0 20px;
+    box-sizing: border-box;
+}
+
+.hidden {
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 1s ease-in-out, visibility 1s ease-in-out;
+}
+
+@media (max-width: 768px) {
+    .content {
+        top: 40%;
+        padding: 0 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    .content {
+        top: 30%;
+        padding: 0 5px;
+    }
+}
