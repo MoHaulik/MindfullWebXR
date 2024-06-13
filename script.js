@@ -2,9 +2,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const introText = document.getElementById('intro-text');
     const mindfulnessText = document.getElementById('mindfulness-text');
     const endText = document.getElementById('end-text');
-    const overlay = document.querySelector('.overlay');
-    const lavaLampBackground = document.querySelector('.lava-lamp-background');
     const goalSound = document.getElementById('goal-sound');
+    const sky = document.getElementById('sky');
+    const ground = document.getElementById('ground');
 
     const mindfulnessMessages = [
         { text: "Think about who you will probably see next. Imagine bringing kindness to this interaction.", end: "Bring kindness to all your upcoming interactions" },
@@ -67,8 +67,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const color1 = getRandomColor(warmColors);
         const color2 = getRandomColor(coolColors);
 
-        lavaLampBackground.style.background = `linear-gradient(45deg, ${color1}, ${color2})`;
-        lavaLampBackground.style.backgroundSize = "200% 200%";
+        const gradientStyle = `linear-gradient(45deg, ${color1}, ${color2})`;
+
+        sky.setAttribute('color', color1);  // Set sky to one of the colors
+        ground.setAttribute('color', color2);  // Set ground to the other color
     }
 
     // Set random background on load
@@ -76,36 +78,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Randomly select a mindfulness message and end prompt
     const randomMessage = mindfulnessMessages[Math.floor(Math.random() * mindfulnessMessages.length)];
-    mindfulnessText.textContent = randomMessage.text;
-    endText.textContent = randomMessage.end;
+    mindfulnessText.setAttribute('value', randomMessage.text);
+    endText.setAttribute('value', randomMessage.end);
 
     introText.addEventListener('click', () => {
-        introText.classList.add('hidden');
-        overlay.style.background = 'rgba(128, 128, 128, 0)';
+        introText.setAttribute('visible', 'false');
         goalSound.play();
 
         setTimeout(() => {
-            mindfulnessText.classList.remove('hidden');
-            mindfulnessText.classList.add('fade-in-out');
+            mindfulnessText.setAttribute('visible', 'true');
 
             setTimeout(() => {
-                mindfulnessText.classList.add('hidden');
-                mindfulnessText.classList.remove('fade-in-out');
+                mindfulnessText.setAttribute('visible', 'false');
                 
                 setTimeout(() => {
-                    endText.classList.remove('hidden');
+                    endText.setAttribute('visible', 'true');
                     goalSound.play();
                     
                     setTimeout(() => {
-                        endText.classList.add('hidden');
-                        overlay.style.background = 'rgba(128, 128, 128, 0.5)';
-                        introText.classList.remove('hidden');
+                        endText.setAttribute('visible', 'false');
+                        introText.setAttribute('visible', 'true');
                         setRandomBackground();  // Change background color for each session
 
                         // Randomly select a new mindfulness message and end prompt for the next session
                         const newRandomMessage = mindfulnessMessages[Math.floor(Math.random() * mindfulnessMessages.length)];
-                        mindfulnessText.textContent = newRandomMessage.text;
-                        endText.textContent = newRandomMessage.end;
+                        mindfulnessText.setAttribute('value', newRandomMessage.text);
+                        endText.setAttribute('value', newRandomMessage.end);
                     }, 30000);  // Show end text for 30 seconds
                 }, 180000);  // Wait for 3 minutes before showing end text
             }, 20000);  // Show mindfulness text for 20 seconds
