@@ -5,14 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mindfulness VR Experience</title>
     <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/mrdoob/three.js@r126/build/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/dataarts/webvr-polyfill@latest/build/webvr-polyfill.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/aframe-shader-extras@3.2.0/dist/aframe-shader-extras.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/aframe-extras@6.1.0/dist/aframe-extras.min.js"></script>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <a-scene>
-        <a-entity id="sky" geometry="primitive: sphere; radius: 100" material="shader: gradient; topColor: #6EBAA7; bottomColor: #7BC8A4;"></a-entity>
+        <a-sky id="sky" material="shader: gradient; topColor: #6EBAA7; bottomColor: #7BC8A4;"></a-sky>
         <a-plane id="ground" rotation="-90 0 0" width="100" height="100" color="#7BC8A4"></a-plane>
         <a-entity id="intro-text" text="value: Take a moment to reflect; align: center; color: #FFF;" position="0 2 -3"></a-entity>
         <a-entity id="mindfulness-text" text="value: ; align: center; color: #FFF;" position="0 2 -3" visible="false"></a-entity>
