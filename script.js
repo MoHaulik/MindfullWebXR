@@ -69,8 +69,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const gradientStyle = `linear-gradient(45deg, ${color1}, ${color2})`;
 
-        sky.setAttribute('color', color1);  // Set sky to one of the colors
-        ground.setAttribute('color', color2);  // Set ground to the other color
+        sky.setAttribute('material', 'shader: gradient; topColor:' + color1 + '; bottomColor:' + color2);
+        ground.setAttribute('color', color2);
     }
 
     // Set random background on load
@@ -78,12 +78,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Randomly select a mindfulness message and end prompt
     const randomMessage = mindfulnessMessages[Math.floor(Math.random() * mindfulnessMessages.length)];
-    mindfulnessText.setAttribute('value', randomMessage.text);
-    endText.setAttribute('value', randomMessage.end);
+    mindfulnessText.setAttribute('text', 'value: ' + randomMessage.text);
+    endText.setAttribute('text', 'value: ' + randomMessage.end);
 
-    introText.addEventListener('click', () => {
+    // Function to start the experience
+    function startExperience() {
         introText.setAttribute('visible', 'false');
-        goalSound.play();
+        goalSound.components.sound.playSound();
 
         setTimeout(() => {
             mindfulnessText.setAttribute('visible', 'true');
@@ -93,20 +94,24 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 setTimeout(() => {
                     endText.setAttribute('visible', 'true');
-                    goalSound.play();
+                    goalSound.components.sound.playSound();
                     
                     setTimeout(() => {
                         endText.setAttribute('visible', 'false');
-                        introText.setAttribute('visible', 'true');
                         setRandomBackground();  // Change background color for each session
 
                         // Randomly select a new mindfulness message and end prompt for the next session
                         const newRandomMessage = mindfulnessMessages[Math.floor(Math.random() * mindfulnessMessages.length)];
-                        mindfulnessText.setAttribute('value', newRandomMessage.text);
-                        endText.setAttribute('value', newRandomMessage.end);
+                        mindfulnessText.setAttribute('text', 'value: ' + newRandomMessage.text);
+                        endText.setAttribute('text', 'value: ' + newRandomMessage.end);
+
+                        setTimeout(startExperience, 10000); // Start the experience again after 10 seconds
                     }, 30000);  // Show end text for 30 seconds
                 }, 180000);  // Wait for 3 minutes before showing end text
             }, 20000);  // Show mindfulness text for 20 seconds
         }, 1000); // Delay before showing mindfulness text
-    });
+    }
+
+    // Automatically start the experience after 10 seconds
+    setTimeout(startExperience, 10000);
 });
