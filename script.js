@@ -75,10 +75,38 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // WebXR setup
     if (navigator.xr) {
-        navigator.xr.requestSession('immersive-vr').then(session => {
-            document.getElementById('xr-scene').appendChild(session.canvas);
-        }).catch(console.error);
+        navigator.xr.requestSession('immersive-vr').then(onSessionStarted);
     } else {
         console.log('WebXR not supported');
+    }
+
+    function onSessionStarted(session) {
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.xr.enabled = true;
+        document.getElementById('xr-canvas-container').appendChild(VRButton.createButton(renderer));
+
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 1000);
+
+        const light = new THREE.HemisphereLight(0xffffff, 0x444444);
+        light.position.set(0, 20, 0);
+        scene.add(light);
+
+        const animate = function () {
+            renderer.setAnimationLoop(render);
+        };
+
+        function render() {
+            renderer.render(scene, camera);
+        }
+
+        session.addEventListener('end', () => {
+            renderer.setAnimationLoop(null);
+        });
+
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setAnimationLoop(render);
+
+        animate();
     }
 });
