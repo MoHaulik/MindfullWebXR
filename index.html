@@ -5,21 +5,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mindfulness WebXR</title>
     <link rel="stylesheet" href="styles.css">
+    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
 </head>
 <body>
-    <div id="xr-canvas-container"></div>
-    <div class="lava-lamp-background">
-        <div class="overlay"></div>
-        <div class="content">
-            <div id="intro-text">Take a moment to reflect</div>
-            <div id="mindfulness-text" class="hidden"></div>
-            <div id="end-text" class="hidden"></div>
-        </div>
-    </div>
-    <audio id="goal-sound" src="goal.mp3" preload="auto"></audio>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@webxr-input-profiles/motion-controllers@1.0.0-beta.3/dist/motion-controllers.module.js"></script>
-    <script src="https://unpkg.com/three/examples/jsm/webxr/VRButton.js"></script>
+    <a-scene>
+        <a-assets>
+            <audio id="goal-sound" src="goal.mp3" preload="auto"></audio>
+        </a-assets>
+
+        <a-entity id="camera" camera look-controls position="0 1.6 0">
+            <a-entity id="intro-text" text="value: Take a moment to reflect; color: white; align: center" position="0 0 -2"></a-entity>
+            <a-entity id="mindfulness-text" text="value: ; color: white; align: center" position="0 0 -2" visible="false"></a-entity>
+            <a-entity id="end-text" text="value: ; color: white; align: center" position="0 0 -2" visible="false"></a-entity>
+        </a-entity>
+
+        <a-sky color="#001"></a-sky>
+        <a-entity id="lava-lamp-background" geometry="primitive: sphere; radius: 100" material="shader: flat; color: #001"></a-entity>
+    </a-scene>
     <script src="script.js"></script>
 </body>
 </html>
