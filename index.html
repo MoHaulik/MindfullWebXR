@@ -3,15 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mindfulness Website</title>
+    <title>Mindfulness WebXR</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div id="container"></div>
+    <div id="xr-scene"></div>
+    <div class="lava-lamp-background">
+        <div class="overlay"></div>
+        <div class="content">
+            <div id="intro-text">Take a moment to reflect</div>
+            <div id="mindfulness-text" class="hidden"></div>
+            <div id="end-text" class="hidden"></div>
+        </div>
+    </div>
     <audio id="goal-sound" src="goal.mp3" preload="auto"></audio>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/webxr-polyfill/1.1.0/webxr-polyfill.min.js"></script>
-    <script src="https://threejs.org/examples/jsm/webxr/VRButton.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
