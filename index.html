@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div id="xr-scene"></div>
+    <div id="xr-canvas-container"></div>
     <div class="lava-lamp-background">
         <div class="overlay"></div>
         <div class="content">
@@ -17,6 +17,9 @@
         </div>
     </div>
     <audio id="goal-sound" src="goal.mp3" preload="auto"></audio>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@webxr-input-profiles/motion-controllers@1.0.0-beta.3/dist/motion-controllers.module.js"></script>
+    <script src="https://unpkg.com/three/examples/jsm/webxr/VRButton.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
