@@ -1,10 +1,8 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const introText = document.getElementById('intro-text');
-    const mindfulnessText = document.getElementById('mindfulness-text');
-    const endText = document.getElementById('end-text');
-    const overlay = document.querySelector('.overlay');
-    const lavaLampBackground = document.querySelector('.lava-lamp-background');
-    const goalSound = document.getElementById('goal-sound');
+    const introText = document.querySelector('#intro-text');
+    const mindfulnessText = document.querySelector('#mindfulness-text');
+    const endText = document.querySelector('#end-text');
+    const goalSound = document.querySelector('#goal-sound');
 
     const mindfulnessMessages = [
         { text: "Think about who you will probably see next. Imagine bringing kindness to this interaction.", end: "Bring kindness to all your upcoming interactions" },
@@ -28,85 +26,42 @@ document.addEventListener('DOMContentLoaded', () => {
         const color1 = getRandomColor(warmColors);
         const color2 = getRandomColor(coolColors);
 
-        lavaLampBackground.style.background = `linear-gradient(45deg, ${color1}, ${color2})`;
-        lavaLampBackground.style.backgroundSize = "200% 200%";
+        document.querySelector('#lava-lamp-background').setAttribute('material', 'color', `linear-gradient(45deg, ${color1}, ${color2})`);
     }
 
     setRandomBackground();
 
     const randomMessage = mindfulnessMessages[Math.floor(Math.random() * mindfulnessMessages.length)];
-    mindfulnessText.textContent = randomMessage.text;
-    endText.textContent = randomMessage.end;
+    mindfulnessText.setAttribute('text', 'value', randomMessage.text);
+    endText.setAttribute('text', 'value', randomMessage.end);
 
     function startExperience() {
-        introText.classList.add('hidden');
-        overlay.style.background = 'rgba(128, 128, 128, 0)';
+        introText.setAttribute('visible', 'false');
         goalSound.play();
 
         setTimeout(() => {
-            mindfulnessText.classList.remove('hidden');
-            mindfulnessText.classList.add('fade-in-out');
+            mindfulnessText.setAttribute('visible', 'true');
 
             setTimeout(() => {
-                mindfulnessText.classList.add('hidden');
-                mindfulnessText.classList.remove('fade-in-out');
-                
+                mindfulnessText.setAttribute('visible', 'false');
+
                 setTimeout(() => {
-                    endText.classList.remove('hidden');
+                    endText.setAttribute('visible', 'true');
                     goalSound.play();
-                    
+
                     setTimeout(() => {
-                        endText.classList.add('hidden');
-                        overlay.style.background = 'rgba(128, 128, 128, 0.5)';
-                        introText.classList.remove('hidden');
+                        endText.setAttribute('visible', 'false');
+                        introText.setAttribute('visible', 'true');
                         setRandomBackground();
 
                         const newRandomMessage = mindfulnessMessages[Math.floor(Math.random() * mindfulnessMessages.length)];
-                        mindfulnessText.textContent = newRandomMessage.text;
-                        endText.textContent = newRandomMessage.end;
+                        mindfulnessText.setAttribute('text', 'value', newRandomMessage.text);
+                        endText.setAttribute('text', 'value', newRandomMessage.end);
                     }, 30000);
                 }, 180000);
             }, 20000);
         }, 1000);
     }
 
-    // Automatically start the experience after 10 seconds
     setTimeout(startExperience, 10000);
-
-    // WebXR setup
-    if (navigator.xr) {
-        navigator.xr.requestSession('immersive-vr').then(onSessionStarted);
-    } else {
-        console.log('WebXR not supported');
-    }
-
-    function onSessionStarted(session) {
-        const renderer = new THREE.WebGLRenderer({ antialias: true });
-        renderer.xr.enabled = true;
-        document.getElementById('xr-canvas-container').appendChild(VRButton.createButton(renderer));
-
-        const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 1000);
-
-        const light = new THREE.HemisphereLight(0xffffff, 0x444444);
-        light.position.set(0, 20, 0);
-        scene.add(light);
-
-        const animate = function () {
-            renderer.setAnimationLoop(render);
-        };
-
-        function render() {
-            renderer.render(scene, camera);
-        }
-
-        session.addEventListener('end', () => {
-            renderer.setAnimationLoop(null);
-        });
-
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setAnimationLoop(render);
-
-        animate();
-    }
 });
