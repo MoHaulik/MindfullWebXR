@@ -4,24 +4,55 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mindfulness WebXR</title>
-    <link rel="stylesheet" href="styles.css">
-    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+    <style>
+        body, html {
+            margin: 0;
+            height: 100%;
+            overflow: hidden;
+            font-family: 'PangramSans', sans-serif;
+            background: black;
+        }
+        .lava-lamp-background {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+        .content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: white;
+            z-index: 2;
+            padding: 0 20px;
+            box-sizing: border-box;
+        }
+        .hidden {
+            display: none;
+        }
+        #vr-button {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 3;
+            padding: 10px;
+            background-color: #444;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+    </style>
 </head>
 <body>
-    <a-scene>
-        <a-assets>
-            <audio id="goal-sound" src="goal.mp3" preload="auto"></audio>
-        </a-assets>
-
-        <a-entity id="camera" camera look-controls position="0 1.6 0">
-            <a-entity id="intro-text" text="value: Take a moment to reflect; color: white; align: center" position="0 0 -2"></a-entity>
-            <a-entity id="mindfulness-text" text="value: ; color: white; align: center" position="0 0 -2" visible="false"></a-entity>
-            <a-entity id="end-text" text="value: ; color: white; align: center" position="0 0 -2" visible="false"></a-entity>
-        </a-entity>
-
-        <a-sky color="#001"></a-sky>
-        <a-entity id="lava-lamp-background" geometry="primitive: sphere; radius: 100" material="shader: flat; color: #001"></a-entity>
-    </a-scene>
+    <div class="lava-lamp-background"></div>
+    <div class="content">
+        <div id="intro-text">Take a moment to reflect</div>
+        <div id="mindfulness-text" class="hidden">Reflect on one thing you're grateful for and think about why you appreciate it so much.</div>
+        <div id="end-text" class="hidden">Carry gratitude with you throughout the day.</div>
+    </div>
+    <button id="vr-button">Enter VR</button>
     <script src="script.js"></script>
 </body>
 </html>
