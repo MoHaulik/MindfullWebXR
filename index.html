@@ -3,56 +3,205 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mindfulness WebXR</title>
+    <title>Mindfulness Website</title>
+    <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
     <style>
+        @font-face {
+            font-family: 'PangramSans';
+            src: url('PPPangramSansRounded-Semibold-1ab2f90b.woff2') format('woff2'),
+                 url('PPPangramSansRounded-CompactRegular-6aa71960.woff2') format('woff2'),
+                 url('PPPangramSans-Medium-86e281ae.woff2') format('woff2'),
+                 url('PPPangramSans-Bold-f02861ce.woff2') format('woff2');
+        }
+
         body, html {
             margin: 0;
             height: 100%;
             overflow: hidden;
             font-family: 'PangramSans', sans-serif;
-            background: black;
         }
-        .lava-lamp-background {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-        }
-        .content {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            text-align: center;
-            color: white;
-            z-index: 2;
-            padding: 0 20px;
-            box-sizing: border-box;
-        }
+
         .hidden {
             display: none;
         }
-        #vr-button {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            z-index: 3;
-            padding: 10px;
-            background-color: #444;
-            color: white;
-            border: none;
-            cursor: pointer;
+
+        .fade-in-out {
+            animation: fadeInOut 1s ease-in-out;
+        }
+
+        @keyframes fadeInOut {
+            0% { opacity: 0; }
+            100% { opacity: 1; }
         }
     </style>
 </head>
 <body>
-    <div class="lava-lamp-background"></div>
-    <div class="content">
-        <div id="intro-text">Take a moment to reflect</div>
-        <div id="mindfulness-text" class="hidden">Reflect on one thing you're grateful for and think about why you appreciate it so much.</div>
-        <div id="end-text" class="hidden">Carry gratitude with you throughout the day.</div>
-    </div>
-    <button id="vr-button">Enter VR</button>
-    <script src="script.js"></script>
+    <a-scene>
+        <a-assets>
+            <audio id="goal-sound" src="goal.mp3" preload="auto"></audio>
+            <style id="text-style">
+                .text {
+                    font-family: 'PangramSans';
+                    color: white;
+                }
+            </style>
+        </a-assets>
+
+        <!-- Dynamic Gradient Sky -->
+        <a-sky id="dynamic-sky" radius="30" theta-length="90"></a-sky>
+
+        <!-- Random Color Ground with Gradual Hue Shifts -->
+        <a-plane id="dynamic-ground" position="0 0 -4" rotation="-90 0 0" width="20" height="20" color="#C8E6C9"></a-plane>
+
+        <!-- Floating Lightning Orbs -->
+        <a-entity id="orbs"></a-entity>
+
+        <a-entity id="text-container" position="0 1.6 -2">
+            <a-text id="intro-text" value="Take a moment to reflect" align="center" color="#FFF" width="3" position="0 1.5 0" font="https://cdn.aframe.io/fonts/mozillavr.fnt"></a-text>
+            <a-text id="mindfulness-text" class="hidden" align="center" color="#FFF" width="3" position="0 1.5 -0.5" font="https://cdn.aframe.io/fonts/mozillavr.fnt"></a-text>
+            <a-text id="end-text" class="hidden" align="center" color="#FFF" width="3" position="0 1.5 -1" font="https://cdn.aframe.io/fonts/mozillavr.fnt"></a-text>
+        </a-entity>
+
+        <a-camera position="0 1.5 0"></a-camera>
+    </a-scene>
+
+    <script>
+        AFRAME.registerComponent('gradient-background', {
+            init: function () {
+                this.colors = ['#B2DFDB', '#FFCCBC', '#D1C4E9', '#C8E6C9'];
+                this.el.setAttribute('material', 'shader: flat;');
+                this.colorIndex = 0;
+                this.changeColor();
+            },
+            changeColor: function () {
+                const sky = this.el;
+                const nextColor = this.colors[(this.colorIndex + 1) % this.colors.length];
+                sky.setAttribute('animation__color', {
+                    property: 'material.color',
+                    from: this.colors[this.colorIndex],
+                    to: nextColor,
+                    dur: 10000,
+                    loop: false,
+                    dir: 'alternate'
+                });
+                this.colorIndex = (this.colorIndex + 1) % this.colors.length;
+                setTimeout(this.changeColor.bind(this), 10000);
+            }
+        });
+
+        AFRAME.registerComponent('hue-shift', {
+            schema: {type: 'color'},
+            init: function () {
+                this.color = new THREE.Color(this.data);
+            },
+            tick: function (time, timeDelta) {
+                this.color.offsetHSL(0.0001, 0, 0);
+                this.el.setAttribute('color', `#${this.color.getHexString()}`);
+            }
+        });
+
+        AFRAME.registerComponent('floating-orbs', {
+            init: function () {
+                this.colors = ['#B2DFDB', '#FFCCBC', '#D1C4E9', '#C8E6C9'];
+                for (let i = 0; i < 50; i++) {
+                    let orb = document.createElement('a-sphere');
+                    orb.setAttribute('position', {
+                        x: (Math.random() - 0.5) * 20,
+                        y: Math.random() * 10,
+                        z: (Math.random() - 0.5) * 20
+                    });
+                    orb.setAttribute('radius', Math.random() * 0.2 + 0.1); // random size between 0.1 and 0.3
+                    orb.setAttribute('color', this.colors[Math.floor(Math.random() * this.colors.length)]);
+                    orb.setAttribute('material', 'opacity: 0.6; emissive: #fff; emissiveIntensity: 0.5;');
+                    orb.setAttribute('animation__position', {
+                        property: 'position',
+                        to: {
+                            x: (Math.random() - 0.5) * 20,
+                            y: Math.random() * 10,
+                            z: (Math.random() - 0.5) * 20
+                        },
+                        loop: true,
+                        dur: 10000,
+                        dir: 'alternate'
+                    });
+                    orb.setAttribute('animation__color', {
+                        property: 'color',
+                        to: this.colors[Math.floor(Math.random() * this.colors.length)],
+                        loop: true,
+                        dur: 5000
+                    });
+                    orb.setAttribute('animation__scale', {
+                        property: 'scale',
+                        to: {
+                            x: Math.random() * 1.5 + 0.5,
+                            y: Math.random() * 1.5 + 0.5,
+                            z: Math.random() * 1.5 + 0.5
+                        },
+                        loop: true,
+                        dur: 10000,
+                        dir: 'alternate'
+                    });
+                    this.el.appendChild(orb);
+                }
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const introText = document.getElementById('intro-text');
+            const mindfulnessText = document.getElementById('mindfulness-text');
+            const endText = document.getElementById('end-text');
+            const goalSound = document.getElementById('goal-sound');
+
+            const mindfulnessMessages = [
+                { text: "Think about who you will probably see next. Imagine bringing kindness to this interaction.", end: "Bring kindness to all your upcoming interactions" },
+                { text: "Reflect on one thing you’re grateful for and think about why you appreciate it so much.", end: "Carry gratitude with you throughout the day." },
+                { text: "Recall a time recently when you felt a sense of calm. Bring that feeling into this moment.", end: "Hold onto this calmness as you go about your day." }
+            ];
+
+            function startSession() {
+                // Randomly select a mindfulness message and end prompt
+                const randomMessage = mindfulnessMessages[Math.floor(Math.random() * mindfulnessMessages.length)];
+                mindfulnessText.setAttribute('value', randomMessage.text);
+                endText.setAttribute('value', '');
+
+                goalSound.play();
+
+                setTimeout(() => {
+                    introText.setAttribute('visible', false);
+                    mindfulnessText.setAttribute('visible', true);
+                    mindfulnessText.classList.add('fade-in-out');
+
+                    setTimeout(() => {
+                        mindfulnessText.setAttribute('visible', false);
+                        mindfulnessText.classList.remove('fade-in-out');
+
+                        setTimeout(() => {
+                            endText.setAttribute('value', randomMessage.end);
+                            endText.setAttribute('visible', true);
+                            goalSound.play();
+
+                            setTimeout(() => {
+                                endText.setAttribute('visible', false);
+                                introText.setAttribute('visible', true);
+                                startSession();  // Start a new session
+                            }, 30000);  // Show end text for 30 seconds
+                        }, 50000);  // Wait for 50 seconds before showing end text
+                    }, 20000);  // Show mindfulness text for 20 seconds
+                }, 1000); // Delay before showing mindfulness text
+            }
+
+            // Set initial visibility
+            introText.setAttribute('visible', true);
+            mindfulnessText.setAttribute('visible', false);
+            endText.setAttribute('visible', false);
+
+            setTimeout(startSession, 10000); // Automatically start the session after 10 seconds
+
+            // Apply the background effects
+            document.querySelector('a-sky').setAttribute('gradient-background', '');
+            document.querySelector('a-plane').setAttribute('hue-shift', 'color: #C8E6C9');
+            document.getElementById('orbs').setAttribute('floating-orbs', '');
+        });
+    </script>
 </body>
 </html>
