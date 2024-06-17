@@ -18,20 +18,29 @@
             margin: 0;
             height: 100%;
             overflow: hidden;
-            font-family: 'PangramSans', sans-serif;
+            font-family: Verdana, Helvetica, Arial, sans-serif;
         }
 
         .hidden {
             display: none;
         }
 
-        .fade-in-out {
-            animation: fadeInOut 1s ease-in-out;
+        .fade-in {
+            animation: fadeIn 5s ease-in-out forwards;
         }
 
-        @keyframes fadeInOut {
+        .fade-out {
+            animation: fadeOut 5s ease-in-out forwards;
+        }
+
+        @keyframes fadeIn {
             0% { opacity: 0; }
             100% { opacity: 1; }
+        }
+
+        @keyframes fadeOut {
+            0% { opacity: 1; }
+            100% { opacity: 0; }
         }
     </style>
 </head>
@@ -39,91 +48,139 @@
     <a-scene>
         <a-assets>
             <audio id="goal-sound" src="goal.mp3" preload="auto"></audio>
+            <audio id="background-sound" src="Zen Garden Serenity.mp3" preload="auto"></audio>
             <style id="text-style">
                 .text {
-                    font-family: 'PangramSans';
+                    font-family: Verdana, Helvetica, Arial, sans-serif;
                     color: white;
+                    font-weight: bold;
                 }
             </style>
         </a-assets>
 
-        <!-- Dynamic Gradient Sky -->
-        <a-sky id="dynamic-sky" radius="30" theta-length="90"></a-sky>
-
-        <!-- Random Color Ground with Gradual Hue Shifts -->
-        <a-plane id="dynamic-ground" position="0 0 -4" rotation="-90 0 0" width="20" height="20" color="#C8E6C9"></a-plane>
+        <!-- Dynamic Gradient Sky with Expanded Randomized Color Palette -->
+        <a-sky id="dynamic-sky" radius="30" theta-length="180"></a-sky>
 
         <!-- Floating Lightning Orbs -->
         <a-entity id="orbs"></a-entity>
 
-        <a-entity id="text-container" position="0 1.6 -2">
-            <a-text id="intro-text" value="Take a moment to reflect" align="center" color="#FFF" width="3" position="0 1.5 0" font="https://cdn.aframe.io/fonts/mozillavr.fnt"></a-text>
-            <a-text id="mindfulness-text" class="hidden" align="center" color="#FFF" width="3" position="0 1.5 -0.5" font="https://cdn.aframe.io/fonts/mozillavr.fnt"></a-text>
-            <a-text id="end-text" class="hidden" align="center" color="#FFF" width="3" position="0 1.5 -1" font="https://cdn.aframe.io/fonts/mozillavr.fnt"></a-text>
+        <!-- Ambient Lighting and Shadows -->
+        <a-light type="ambient" color="#BBB"></a-light>
+        <a-light type="point" position="2 4 -3" intensity="0.5" castShadow="true"></a-light>
+
+        <a-entity id="text-container" position="0 0.6 -2">
+            <a-text id="intro-text" value="Take a moment to reflect" align="center" color="#FFF" width="3.5" position="0 0.5 0" font-weight="bold"></a-text>
+            <a-text id="mindfulness-text" class="hidden" align="center" color="#FFF" width="3.5" position="0 0.5 -0.5" font-weight="bold"></a-text>
+            <a-text id="end-text" class="hidden" align="center" color="#FFF" width="3.5" position="0 0.5 -1" font-weight="bold"></a-text>
         </a-entity>
 
-        <a-camera position="0 1.5 0"></a-camera>
+        <a-camera position="0 0.6 0"></a-camera>
     </a-scene>
 
     <script>
         AFRAME.registerComponent('gradient-background', {
             init: function () {
-                this.colors = ['#B2DFDB', '#FFCCBC', '#D1C4E9', '#C8E6C9'];
+                this.colors = [
+                    ['#E0C3FC', '#8EC5FC', '#E0C3FC'], // Pastel tones
+                    ['#F4E2D8', '#BA5370', '#F4E2D8'], // Soft gradient tones
+                    ['#F8BBD0', '#F48FB1', '#F06292'], // Pastel pink tones
+                    ['#E1BEE7', '#CE93D8', '#BA68C8'], // Pastel purple tones
+                    ['#D1C4E9', '#B39DDB', '#9575CD'], // Light purple tones
+                    ['#C8E6C9', '#A5D6A7', '#81C784'], // Pastel green tones
+                    ['#FFCCBC', '#FFAB91', '#FF8A65']  // Light orange tones
+                ];
                 this.el.setAttribute('material', 'shader: flat;');
-                this.colorIndex = 0;
+                this.colorIndex = Math.floor(Math.random() * this.colors.length); // Start with a random color
+                this.changeRate = 10000; // Initial rate of 10 seconds
+                this.lastRotation = { x: 0, y: 0, z: 0 };
                 this.changeColor();
+            },
+            tick: function () {
+                const cameraRotation = document.querySelector('a-camera').getAttribute('rotation');
+                const rotationChange = Math.abs(cameraRotation.x - this.lastRotation.x) + 
+                                       Math.abs(cameraRotation.y - this.lastRotation.y) + 
+                                       Math.abs(cameraRotation.z - this.lastRotation.z);
+                this.changeRate = rotationChange > 0.1 ? 2000 : 10000; // Faster rate if moving, slower if still
+                this.lastRotation = { ...cameraRotation };
             },
             changeColor: function () {
                 const sky = this.el;
-                const nextColor = this.colors[(this.colorIndex + 1) % this.colors.length];
+                const nextColor = this.colors[(this.colorIndex + 1) % this.colors.length][0];
                 sky.setAttribute('animation__color', {
                     property: 'material.color',
-                    from: this.colors[this.colorIndex],
+                    from: this.colors[this.colorIndex][0],
                     to: nextColor,
-                    dur: 10000,
+                    dur: this.changeRate,
                     loop: false,
                     dir: 'alternate'
                 });
                 this.colorIndex = (this.colorIndex + 1) % this.colors.length;
-                setTimeout(this.changeColor.bind(this), 10000);
-            }
-        });
-
-        AFRAME.registerComponent('hue-shift', {
-            schema: {type: 'color'},
-            init: function () {
-                this.color = new THREE.Color(this.data);
-            },
-            tick: function (time, timeDelta) {
-                this.color.offsetHSL(0.0001, 0, 0);
-                this.el.setAttribute('color', `#${this.color.getHexString()}`);
+                setTimeout(this.changeColor.bind(this), this.changeRate);
             }
         });
 
         AFRAME.registerComponent('floating-orbs', {
             init: function () {
-                this.colors = ['#B2DFDB', '#FFCCBC', '#D1C4E9', '#C8E6C9'];
-                for (let i = 0; i < 50; i++) {
+                this.colors = ['#E0C3FC', '#F4E2D8', '#F8BBD0', '#E1BEE7', '#D1C4E9', '#C8E6C9', '#FFCCBC'];
+                for (let i = 0; i < 62; i++) {  // 50 orbs + 24% more (62 orbs)
                     let orb = document.createElement('a-sphere');
                     orb.setAttribute('position', {
                         x: (Math.random() - 0.5) * 20,
-                        y: Math.random() * 10,
+                        y: (Math.random() * 10) * 0.4,  // Lower by 60%
                         z: (Math.random() - 0.5) * 20
                     });
                     orb.setAttribute('radius', Math.random() * 0.2 + 0.1); // random size between 0.1 and 0.3
                     orb.setAttribute('color', this.colors[Math.floor(Math.random() * this.colors.length)]);
                     orb.setAttribute('material', 'opacity: 0.6; emissive: #fff; emissiveIntensity: 0.5;');
-                    orb.setAttribute('animation__position', {
-                        property: 'position',
-                        to: {
-                            x: (Math.random() - 0.5) * 20,
-                            y: Math.random() * 10,
-                            z: (Math.random() - 0.5) * 20
+
+                    // Extended animation paths
+                    const keyframes = [
+                        {
+                            property: 'position',
+                            to: {
+                                x: orb.getAttribute('position').x + (Math.random() * 20 - 10),
+                                y: orb.getAttribute('position').y + (Math.random() * 10) * 0.4,
+                                z: orb.getAttribute('position').z + (Math.random() * 20 - 10)
+                            },
+                            dur: 165000 / 4,
+                            easing: 'easeInOutQuad'
                         },
-                        loop: true,
-                        dur: 10000,
-                        dir: 'alternate'
+                        {
+                            property: 'position',
+                            to: {
+                                x: orb.getAttribute('position').x + (Math.random() * 20 - 10),
+                                y: orb.getAttribute('position').y + (Math.random() * 10) * 0.4,
+                                z: orb.getAttribute('position').z + (Math.random() * 20 - 10)
+                            },
+                            dur: 165000 / 4,
+                            easing: 'easeInOutQuad'
+                        },
+                        {
+                            property: 'position',
+                            to: {
+                                x: orb.getAttribute('position').x + (Math.random() * 20 - 10),
+                                y: orb.getAttribute('position').y + (Math.random() * 10) * 0.4,
+                                z: orb.getAttribute('position').z + (Math.random() * 20 - 10)
+                            },
+                            dur: 165000 / 4,
+                            easing: 'easeInOutQuad'
+                        },
+                        {
+                            property: 'position',
+                            to: {
+                                x: orb.getAttribute('position').x + (Math.random() * 20 - 10),
+                                y: orb.getAttribute('position').y + (Math.random() * 10) * 0.4,
+                                z: orb.getAttribute('position').z + (Math.random() * 20 - 10)
+                            },
+                            dur: 165000 / 4,
+                            easing: 'easeInOutQuad'
+                        }
+                    ];
+
+                    keyframes.forEach(keyframe => {
+                        orb.setAttribute('animation__position' + Math.random(), keyframe);
                     });
+
                     orb.setAttribute('animation__color', {
                         property: 'color',
                         to: this.colors[Math.floor(Math.random() * this.colors.length)],
@@ -146,48 +203,117 @@
             }
         });
 
+        function typeWriterEffect(element, text, delay = 100) {
+            element.setAttribute('value', '');
+            let i = 0;
+            function typeWriter() {
+                if (i < text.length) {
+                    element.setAttribute('value', element.getAttribute('value') + text.charAt(i));
+                    i++;
+                    setTimeout(typeWriter, delay);
+                }
+            }
+            typeWriter();
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             const introText = document.getElementById('intro-text');
             const mindfulnessText = document.getElementById('mindfulness-text');
             const endText = document.getElementById('end-text');
             const goalSound = document.getElementById('goal-sound');
+            const backgroundSound = document.getElementById('background-sound');
+
+            // Lower the volume by 40%
+            goalSound.volume = 0.6;
+            backgroundSound.volume = 0.6;
 
             const mindfulnessMessages = [
                 { text: "Think about who you will probably see next. Imagine bringing kindness to this interaction.", end: "Bring kindness to all your upcoming interactions" },
                 { text: "Reflect on one thing you’re grateful for and think about why you appreciate it so much.", end: "Carry gratitude with you throughout the day." },
-                { text: "Recall a time recently when you felt a sense of calm. Bring that feeling into this moment.", end: "Hold onto this calmness as you go about your day." }
+                { text: "Recall a time recently when you felt a sense of calm. Bring that feeling into this moment.", end: "Hold onto this calmness as you go about your day." },
+                { text: "Think about a challenge you're facing and how it will help you grow.", end: "Embrace growth and learning from every challenge." },
+                { text: "Become very aware of the things you see, hear, and feel. Let this focus your attention.", end: "Stay mindful and present in each moment." },
+                { text: "Think about something you love to do and why it brings you joy.", end: "Find time today to engage in something that brings you joy." },
+                { text: "Recall a time when you learned a new way of doing something and what it felt like to think in that new way.", end: "Be open to learning and new perspectives." },
+                { text: "Recall a challenge you’ve overcome. Looking back, what’s one thing you learned from it?", end: "Use your past experiences to guide you forward." },
+                { text: "Open and close your eyes and mouth a few times. Then let the muscles in your face gently relax.", end: "Carry this feeling of relaxation with you." },
+                { text: "Remind yourself of a recent challenge you’ve overcome. Think about the traits you have that helped.", end: "Recognize and celebrate your strengths." },
+                { text: "Recall a recent moment when you felt inspired. Think about what led to that moment.", end: "Seek out inspiration in your daily life." },
+                { text: "Picture gentle ocean waves. Imagine how they sound rolling in one after the other.", end: "Let the rhythm of the waves calm and soothe you." },
+                { text: "Think about a time when someone was kind to you and how it felt. Enjoy this memory.", end: "Carry this kind memory with you." },
+                { text: "Reflect on someone you appreciate and why.", end: "Express your appreciation to them today." },
+                { text: "Picture a place where you feel most at peace. Imagine yourself there now.", end: "Hold onto this peaceful feeling." },
+                { text: "Think about a goal you have. What’s one small step you can take today to move toward it?", end: "Take action towards your goal, no matter how small." },
+                { text: "Recall a compliment someone gave you recently. How did it make you feel?", end: "Share a compliment with someone else today." },
+                { text: "Visualize a time when you felt proud of yourself. What did you accomplish?", end: "Believe in your ability to achieve great things." },
+                { text: "Think about a book or movie that made you think deeply. What did you learn from it?", end: "Seek out thought-provoking experiences." },
+                { text: "Remember a time when you laughed deeply. What brought you so much joy?", end: "Find reasons to laugh and smile today." },
+                { text: "Picture a favorite memory from childhood. What made it special?", end: "Cherish your happy memories." },
+                { text: "Think about a person who has influenced you positively. What did you learn from them?", end: "Carry their lessons with you." },
+                { text: "Recall a time when you felt very connected to someone. What made that connection strong?", end: "Nurture your important relationships." },
+                { text: "Visualize a place you want to visit someday. Imagine the sights, sounds, and smells.", end: "Keep your dreams and aspirations alive." },
+                { text: "Reflect on a recent achievement, no matter how small. What did it take to accomplish it?", end: "Celebrate your achievements." },
+                { text: "Think about a time you felt truly happy. What were you doing?", end: "Create more moments of happiness." },
+                { text: "Picture yourself in a comfortable and safe place. Imagine how it feels.", end: "Return to this safe place whenever you need it." },
+                { text: "Recall a time when you felt strong and capable. What gave you that strength?", end: "Tap into your inner strength." },
+                { text: "Think about a recent act of kindness you witnessed. How did it make you feel?", end: "Be inspired to perform acts of kindness." },
+                { text: "Visualize a bright future for yourself. What does it look like?", end: "Work towards making that future a reality." },
+                { text: "Remember a time when you felt very grateful. What were you grateful for?", end: "Practice gratitude daily." },
+                { text: "Think about a time when you felt truly understood. What was that like?", end: "Strive to understand and be understood." },
+                { text: "Picture a person who always makes you smile. Why do they have that effect on you?", end: "Let them know they make you smile." },
+                { text: "Recall a time when you felt very peaceful. What contributed to that feeling?", end: "Seek out peace and tranquility." },
+                { text: "Think about a time you received good advice. What was it and how did it help you?", end: "Share valuable advice with others." },
+                { text: "Reflect on a moment when you felt very motivated. What was driving you?", end: "Use that motivation to tackle your tasks today." },
+                { text: "Picture a favorite meal you've had. Imagine the tastes and smells.", end: "Enjoy and savor your meals mindfully." },
+                { text: "Think about a time when you felt a deep sense of connection to nature. Where were you?", end: "Spend time in nature to rejuvenate yourself." },
+                { text: "Recall a time when you helped someone and how it made you feel.", end: "Look for opportunities to help others." },
+                { text: "Visualize a time when you felt balanced and in harmony. What contributed to that balance?", end: "Strive for balance in your daily life." }
             ];
 
             function startSession() {
                 // Randomly select a mindfulness message and end prompt
                 const randomMessage = mindfulnessMessages[Math.floor(Math.random() * mindfulnessMessages.length)];
-                mindfulnessText.setAttribute('value', randomMessage.text);
+                mindfulnessText.setAttribute('value', '');
                 endText.setAttribute('value', '');
-
-                goalSound.play();
 
                 setTimeout(() => {
                     introText.setAttribute('visible', false);
-                    mindfulnessText.setAttribute('visible', true);
-                    mindfulnessText.classList.add('fade-in-out');
+                    goalSound.play();
 
                     setTimeout(() => {
-                        mindfulnessText.setAttribute('visible', false);
-                        mindfulnessText.classList.remove('fade-in-out');
+                        mindfulnessText.setAttribute('visible', true);
+                        typeWriterEffect(mindfulnessText, randomMessage.text);
+
+                        backgroundSound.play();
 
                         setTimeout(() => {
-                            endText.setAttribute('value', randomMessage.end);
-                            endText.setAttribute('visible', true);
-                            goalSound.play();
+                            mindfulnessText.classList.add('fade-out');
 
                             setTimeout(() => {
-                                endText.setAttribute('visible', false);
-                                introText.setAttribute('visible', true);
-                                startSession();  // Start a new session
-                            }, 30000);  // Show end text for 30 seconds
-                        }, 50000);  // Wait for 50 seconds before showing end text
-                    }, 20000);  // Show mindfulness text for 20 seconds
-                }, 1000); // Delay before showing mindfulness text
+                                mindfulnessText.setAttribute('visible', false);
+                                mindfulnessText.classList.remove('fade-in');
+                                mindfulnessText.classList.remove('fade-out');
+
+                                setTimeout(() => {
+                                    endText.setAttribute('value', randomMessage.end);
+                                    endText.setAttribute('visible', true);
+                                    endText.classList.add('fade-in');
+                                    goalSound.play();
+
+                                    setTimeout(() => {
+                                        endText.classList.add('fade-out');
+
+                                        setTimeout(() => {
+                                            endText.setAttribute('visible', false);
+                                            endText.classList.remove('fade-in');
+                                            endText.classList.remove('fade-out');
+                                        }, 5000);  // Smooth fade out for end text
+                                    }, 30000);  // Show end text for 30 seconds
+                                }, 90000);  // Wait for 1.5 minutes before showing end text
+                            }, 5000);  // Smooth fade out for mindfulness text
+                        }, 20000);  // Show mindfulness text for 20 seconds
+                    }, 1000);  // Delay before showing mindfulness text
+                }, 10000); // Initial delay before hiding intro text and playing goal sound
             }
 
             // Set initial visibility
@@ -199,7 +325,6 @@
 
             // Apply the background effects
             document.querySelector('a-sky').setAttribute('gradient-background', '');
-            document.querySelector('a-plane').setAttribute('hue-shift', 'color: #C8E6C9');
             document.getElementById('orbs').setAttribute('floating-orbs', '');
         });
     </script>
